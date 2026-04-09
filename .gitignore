@@ -13,3 +13,11 @@ build/
 derby.log
 metastore_db/
 spark-warehouse/
+files/
+output/
+*.parquet
+*.snappy.parquet
+*.crc
+_SUCCESS
+._SUCCESS.crc
+_delta_log/
