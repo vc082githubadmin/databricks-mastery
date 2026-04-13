@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 3 — MERGE INTO, UPDATE, DELETE, VACUUM & OPTIMIZE
 # Run in Databricks — spark object pre-created automatically
@@ -31,6 +32,7 @@ df_customers.write.format("delta") \
 print("=== Initial customers table ===")
 spark.sql("SELECT * FROM default.customers_target ORDER BY customer_id").show()
 
+# COMMAND ----------
 
 # ── BLOCK 2: UPDATE ──────────────────────────────────────────
 # Update Eve's status from inactive to active
@@ -62,6 +64,8 @@ spark.sql("""
     DESCRIBE HISTORY default.customers_target
 """).select("version", "timestamp", "operation").show()
 
+
+# COMMAND ----------
 
 # ── BLOCK 3: DELETE ──────────────────────────────────────────
 # Hard delete — permanently remove Dave
@@ -117,6 +121,7 @@ spark.sql("""
     ORDER BY customer_id
 """).show()
 
+# COMMAND ----------
 
 # ── BLOCK 4: MERGE INTO — the CDC upsert pattern ─────────────
 # Source table: incoming changes with op_type I/U/D
@@ -180,6 +185,7 @@ spark.sql("""
     DESCRIBE HISTORY default.customers_target
 """).select("version", "timestamp", "operation").show()
 
+# COMMAND ----------
 
 # ── BLOCK 5: MERGE for deduplication ─────────────────────────
 # A common pattern: insert only if the record doesn't already exist
@@ -230,6 +236,8 @@ print("\n=== After deduplication MERGE (E001 not duplicated, E003 added) ===")
 spark.sql("SELECT event_id, event_type, user_id FROM default.events ORDER BY event_id").show()
 
 
+# COMMAND ----------
+
 # ── BLOCK 6: OPTIMIZE and Z-ORDER ────────────────────────────
 # Compact small files and cluster data for faster queries
 
@@ -257,6 +265,8 @@ spark.sql("""
     DESCRIBE HISTORY default.customers_target
 """).select("version", "timestamp", "operation").show(5)
 
+
+# COMMAND ----------
 
 # ── BLOCK 7: VACUUM ──────────────────────────────────────────
 # Remove files no longer referenced by active versions
