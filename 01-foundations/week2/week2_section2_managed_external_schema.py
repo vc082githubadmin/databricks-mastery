@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 2 — Managed vs External Tables & Schema Evolution
 # Run in Databricks — spark object pre-created automatically
@@ -26,12 +27,13 @@ df.write.format("delta") \
 print("=== Managed Table Location ===")
 spark.sql("""
     DESCRIBE DETAIL default.orders_managed
-""").select("name", "location", "tableType").show(truncate=False)
+""").select("name", "location", "format").show(truncate=False)
 
 # OBSERVE: location is controlled by Databricks
 # tableType = MANAGED
 # You did NOT choose this path — Databricks did
 
+# COMMAND ----------
 
 # ── BLOCK 2: External Table ──────────────────────────────────
 # YOU control the data file location
@@ -61,12 +63,13 @@ spark.sql(f"""
 print("\n=== External Table Location ===")
 spark.sql("""
     DESCRIBE DETAIL default.orders_external
-""").select("name", "location", "tableType").show(truncate=False)
+""").select("name", "location", "format").show(truncate=False)
 
 # OBSERVE: location = the path YOU specified
 # tableType = EXTERNAL
 # You own this path — dropping the table leaves data intact
 
+# COMMAND ----------
 
 # ── BLOCK 3: DROP behaviour difference ───────────────────────
 # This is the critical difference between managed and external
@@ -111,6 +114,8 @@ print("\n=== External table recreated — data immediately available ===")
 spark.sql("SELECT * FROM default.orders_external").show()
 
 
+# COMMAND ----------
+
 # ── BLOCK 4: Schema Enforcement ──────────────────────────────
 # Delta rejects writes that don't match the table schema by default
 
@@ -151,6 +156,7 @@ except Exception as e:
 # The table is unchanged — check the count
 print(f"\nTable still has original 3 rows: {spark.sql('SELECT COUNT(*) FROM default.products').collect()[0][0]}")
 
+# COMMAND ----------
 
 # ── BLOCK 5: Schema Evolution with mergeSchema ───────────────
 # Deliberately allow the schema to change by setting mergeSchema=true
@@ -175,13 +181,14 @@ spark.sql("SELECT * FROM default.products ORDER BY product_id").show()
 #          product_id 4 has category = "Electronics" (written after evolution)
 # Old Parquet files NOT rewritten — null returned dynamically from metadata
 
+# COMMAND ----------
 
 # ── BLOCK 6: Schema Evolution with ALTER TABLE ───────────────
 # Add columns explicitly with full control over name and type
 
 spark.sql("""
-    ALTER TABLE default.products
-    ADD COLUMNS (
+    ALTER TABLE default.products 
+    ADD COLUMNS(
         stock_count INT,
         supplier    STRING
     )
@@ -197,6 +204,7 @@ spark.sql("SELECT product_id, name, price, stock_count, supplier FROM default.pr
 # OBSERVE: stock_count and supplier are null for all existing rows
 # New writes will include these columns with actual values
 
+# COMMAND ----------
 
 # ── BLOCK 7: Schema Enforcement with Constraints ─────────────
 # ADD CONSTRAINT enforces business rules — throws error on violation
