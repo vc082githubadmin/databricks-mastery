@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 1 — Delta Lake ACID & Transaction Log
 # Run this in Databricks Community Edition
@@ -11,9 +12,12 @@
 print(f"Spark version: {spark.version}")
 print(f"Current user: {spark.sql('SELECT current_user()').collect()[0][0]}")
 
+# COMMAND ----------
+
 # Confirm Delta is available — no pip install needed in Databricks
 spark.sql("SELECT 1 AS delta_check").show()
 
+# COMMAND ----------
 
 # ── BLOCK 2: Create a Delta table ────────────────────────────
 # We use saveAsTable() to register in Unity Catalog
@@ -44,6 +48,7 @@ df.write \
 print("Table created — version 0")
 spark.sql("SELECT * FROM default.employees_delta").show()
 
+# COMMAND ----------
 
 # ── BLOCK 3: Inspect the transaction log ─────────────────────
 # DESCRIBE HISTORY shows every transaction as a row
@@ -73,6 +78,7 @@ spark.sql("""
 # OBSERVE: version = 0, operation = CREATE TABLE or WRITE
 # location shows where the Delta files live in cloud storage
 
+# COMMAND ----------
 
 # ── BLOCK 4: Make changes — watch versions increment ─────────
 # Each write operation creates a new version in the log
@@ -129,6 +135,7 @@ spark.sql("""
 # OBSERVE: each operation created a new version
 # UPDATE and DELETE are tracked — this is what enables time travel
 
+# COMMAND ----------
 
 # ── BLOCK 5: Time Travel ─────────────────────────────────────
 # Query the table AS IT WAS at any previous version
@@ -165,6 +172,7 @@ spark.sql("""
 #          current version shows salary = 102000
 # The data files for version 1 are still on disk — Delta never deleted them
 
+# COMMAND ----------
 
 # ── BLOCK 6: RESTORE — rollback to a previous version ────────
 # If a bad write corrupted your table, restore to a known good version
@@ -196,6 +204,7 @@ spark.sql("""
 # Versions 1,2,3 still exist in the log — nothing is erased
 # You could restore to version 3 again if needed
 
+# COMMAND ----------
 
 # ── BLOCK 7: VACUUM — clean up old files ─────────────────────
 # VACUUM removes data files no longer referenced by the active log
