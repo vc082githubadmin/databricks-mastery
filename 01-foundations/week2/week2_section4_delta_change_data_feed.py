@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 4 — Delta Change Data Feed (CDF)
 # Run in Databricks — spark object pre-created automatically
@@ -41,6 +42,7 @@ spark.sql("""
     DESCRIBE DETAIL default.products_cdf
 """).select("name", "properties").show(truncate=False)
 
+# COMMAND ----------
 
 # ── BLOCK 2: Make changes — generate CDF records ─────────────
 # Each operation type produces different _change_type values
@@ -85,6 +87,7 @@ spark.sql("""
     DESCRIBE HISTORY default.products_cdf
 """).select("version", "timestamp", "operation").show()
 
+# COMMAND ----------
 
 # ── BLOCK 3: Read CDF in batch mode ──────────────────────────
 # Read all changes from version 1 onwards
@@ -112,6 +115,7 @@ cdf_df.select(
 # DELETE on Keyboard → 1 row: delete
 # INSERT of Monitor + Webcam → 2 rows: insert + insert
 
+# COMMAND ----------
 
 # ── BLOCK 4: Filter by change type ───────────────────────────
 # Downstream consumers typically filter on _change_type to route changes
@@ -135,6 +139,7 @@ cdf_df.filter("_change_type = 'insert'") \
 #          update_postimage is used when you need the current/new value
 #          delete shows exactly what was in the row before it was removed
 
+# COMMAND ----------
 
 # ── BLOCK 5: CDF between specific versions ───────────────────
 # Read only changes between version 2 and version 3
@@ -160,6 +165,7 @@ cdf_v2_v3.select(
 # OBSERVE: only shows changes from versions 2 and 3
 # Changes from versions 4 and 5 are excluded
 
+# COMMAND ----------
 
 # ── BLOCK 6: CDF streaming read ──────────────────────────────
 # Stream changes from products_cdf into a summary table
@@ -192,6 +198,7 @@ spark.sql("""
     ORDER BY _commit_version, product_id
 """).show(20)
 
+# COMMAND ----------
 
 # ── BLOCK 7: CDF for downstream propagation ──────────────────
 # Common pattern: use CDF to propagate only changes to a downstream table
