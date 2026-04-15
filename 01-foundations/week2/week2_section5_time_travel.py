@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 5 — Time Travel Deep Dive
 # Run in Databricks — spark object pre-created automatically
@@ -60,6 +61,7 @@ spark.sql("""
     DESCRIBE HISTORY default.sales_history
 """).select("version", "timestamp", "operation").show()
 
+# COMMAND ----------
 
 # ── BLOCK 2: Time travel by version ──────────────────────────
 # Query the table as it existed at a specific version
@@ -88,6 +90,8 @@ spark.sql("""
 # OBSERVE: version 2 total revenue is correct
 #          current version total revenue is 100x too high
 
+
+# COMMAND ----------
 
 # ── BLOCK 3: Time travel by timestamp ────────────────────────
 # Find the timestamp of version 2 from DESCRIBE HISTORY
@@ -122,6 +126,7 @@ v2_df = spark.read.format("delta") \
 
 print(f"\n=== Python API TIMESTAMP AS OF — row count: {v2_df.count()} ===")
 
+# COMMAND ----------
 
 # ── BLOCK 4: Data comparison between versions ────────────────
 # Compare version 2 (correct) vs current (corrupted)
@@ -152,6 +157,7 @@ diff.show()
 # OBSERVE: every row shows corrupted_amount = correct_amount * 100
 # This diff pattern pinpoints exactly what the bad pipeline did
 
+# COMMAND ----------
 
 # ── BLOCK 5: RESTORE — point-in-time recovery ────────────────
 # Restore the table to version 2 — before the bad update
@@ -179,6 +185,7 @@ spark.sql("""
 # The history is preserved — version 3 (bad update) still exists
 # You can still query version 3 via time travel if needed for audit
 
+# COMMAND ----------
 
 # ── BLOCK 6: Create new table from time travel ───────────────
 # Instead of restoring in place, create a clean copy
@@ -199,6 +206,7 @@ spark.sql("""
     FROM default.sales_clean_copy
 """).show()
 
+# COMMAND ----------
 
 # ── BLOCK 7: Retention configuration ─────────────────────────
 # View and configure how long history is retained
@@ -229,6 +237,7 @@ spark.sql("""
     FROM default.sales_history VERSION AS OF 1
 """).show()
 
+# COMMAND ----------
 
 # ── BLOCK 8: Programmatic version tracking ───────────────────
 # Best practice: record the version used for reproducibility
