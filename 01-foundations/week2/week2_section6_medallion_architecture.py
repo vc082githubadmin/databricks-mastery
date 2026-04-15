@@ -1,3 +1,4 @@
+# Databricks notebook source
 # ============================================================
 # Week 2 · Section 6 — Medallion Architecture Bronze/Silver/Gold
 # End-to-end mini pipeline: raw orders → Bronze → Silver → Gold
@@ -17,7 +18,13 @@ spark.sql("DROP TABLE IF EXISTS default.silver_orders_quarantine")
 print("=== Setup complete — all tables dropped ===")
 
 
+
+
+# COMMAND ----------
+
 # ── BLOCK 2: Bronze — raw ingestion ──────────────────────────
+
+from pyspark.sql.functions import to_timestamp
 # Bronze captures exactly what arrived — raw payload + metadata
 # No transformation, no parsing, no cleaning
 # Append-only
@@ -40,7 +47,6 @@ batch1 = [
     ("2024-01-15T08:00:00", "orders_20240115.json",
      '{"order_id":3,"customer_id":"C001","amount":499.99,"region":"North","status":"pending","order_date":"2024-01-15"}'),
 ]
-
 # Batch 2 — includes a duplicate of order 1 (at-least-once delivery)
 batch2 = [
     ("2024-01-16T08:00:00", "orders_20240116.json",
@@ -67,7 +73,7 @@ for batch in [batch1, batch2, batch3]:
     df = spark.createDataFrame(
         batch,
         ["ingestion_timestamp", "source_file", "raw_payload"]
-    )
+    ).withColumn("ingestion_timestamp",to_timestamp(col("ingestion_timestamp")))
     df.write.format("delta").mode("append").saveAsTable("default.bronze_orders")
 
 print("\n=== Bronze table — raw payloads preserved ===")
@@ -80,6 +86,7 @@ spark.sql("""
 print(f"\nBronze row count: {spark.sql('SELECT COUNT(*) FROM default.bronze_orders').collect()[0][0]}")
 print("Note: order_id 1 appears TWICE — duplicate from at-least-once delivery")
 
+# COMMAND ----------
 
 # ── BLOCK 3: Bronze → Silver promotion ───────────────────────
 # Parse raw JSON, enforce schema, deduplicate, quarantine bad records
@@ -115,7 +122,7 @@ invalid_records = bronze_parsed.filter(
     (col("amount") <= 0) |
     (col("order_id").isNull())
 )
-
+valid_records = valid_records.drop_duplicates(["order_id"])
 print(f"\nValid records: {valid_records.count()}")
 print(f"Invalid/quarantined records: {invalid_records.count()}")
 
@@ -168,6 +175,7 @@ print("Note: order_id 1 appears ONCE — duplicate removed by MERGE")
 print("Note: order_id 7 (null customer) is in quarantine — not in Silver")
 print("Note: order_id 5 (negative amount) is in quarantine — not in Silver")
 
+# COMMAND ----------
 
 # ── BLOCK 4: Silver → Gold aggregation ───────────────────────
 # Gold is purpose-built for a specific business question
@@ -200,6 +208,8 @@ spark.sql("""
 """).show()
 
 
+# COMMAND ----------
+
 # ── BLOCK 5: Layer verification ───────────────────────────────
 # Confirm each layer has the right row counts and properties
 
@@ -231,6 +241,7 @@ spark.sql("""
     ORDER BY order_id
 """).show()
 
+# COMMAND ----------
 
 # ── BLOCK 6: SCD Type 2 — customer dimension ─────────────────
 # Demonstrates how slowly changing dimensions work in the Lakehouse
