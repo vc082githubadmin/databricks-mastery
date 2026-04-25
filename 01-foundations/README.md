@@ -1,1 +1,1 @@
-# Phase 1 — Foundations (Weeks 1–4)
+# Phase 1 — Foundations (Weeks 1–2)
