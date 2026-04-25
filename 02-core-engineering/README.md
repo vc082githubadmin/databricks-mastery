@@ -1,1 +1,1 @@
-# Phase 2 — Core Engineering (Weeks 5–9)
+# Phase 2 — Core Engineering (Weeks 3–9)
